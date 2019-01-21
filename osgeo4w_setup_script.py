@@ -99,7 +99,7 @@ def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_p
 def osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix):
     base_url = 'http://download.osgeo.org/osgeo4w/'
     osgeo4w_packages = ['python3-gdal', 'python3-pip', 'python3-setuptools', 'gdal-ecw', 'gdal-mrsid', 'python3-pandas']
-    python_packages = ['angles', 'geographiclib']
+    python_packages = ['angles', 'geographiclib', 'shapely']
     # python_packages2 = ['pandas', 'geopandas']
 
     for is64 in is64_arcs:
