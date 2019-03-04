@@ -30,6 +30,7 @@ __status__ = "Production"
 import os
 import subprocess
 import urllib.request
+from shutil import copyfile
 
 
 def osgeo4w_setup_run(setup_exe_path, site, osgeo4w_root, local_package_dir, osgeo4w_packages):
@@ -94,11 +95,14 @@ def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_p
     osgeo4w_batch_filename = os.path.join(osgeo4w_root, 'OSGeo4W.bat')
     osgeo4w_batch_filename = osgeo4w_py3_batchfile_create(osgeo4w_batch_filename, osgeo4w_root)
     osgeo4w_py_install(osgeo4w_batch_filename, python_packages)
+    if not copy_geos_c_dll(osgeo4w_root):
+        print('{}: copy geos_c.dll failed'.format(osgeo4w_root))
 
 
 def osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix):
     base_url = 'http://download.osgeo.org/osgeo4w/'
-    osgeo4w_packages = ['python3-gdal', 'python3-pip', 'python3-setuptools', 'gdal-ecw', 'gdal-mrsid', 'python3-pandas']
+    osgeo4w_packages = ['python3-gdal', 'python3-pip', 'python3-setuptools', 'gdal-ecw', 'gdal-mrsid', 'python3-pandas',
+                        'python3-matplotlib', 'pyqt5']
     python_packages = ['angles', 'geographiclib', 'shapely']
     # python_packages2 = ['pandas', 'geopandas']
 
@@ -108,6 +112,19 @@ def osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix):
         local_package_dir = osgeo4w_root + '-Setup'
         osgeo4w_setup_exe_dir = local_package_dir
         osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_package_dir, osgeo4w_packages, python_packages)
+
+
+def copy_geos_c_dll(path):
+    src = os.path.join(path, r'bin\geos_c.dll')
+    if not os.path.isfile(src):
+        return False
+    dst = os.path.join(path, r'apps\Python37\Library\lib\geos_c.dll')
+    if os.path.isfile(dst):
+        return True
+    dst_dir = os.path.split(dst)[0]
+    os.makedirs(dst_dir, exist_ok=True)
+    copyfile(src, dst)
+    return True
 
 
 if __name__ == '__main__':
