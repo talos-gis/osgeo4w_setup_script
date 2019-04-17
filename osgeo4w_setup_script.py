@@ -50,13 +50,15 @@ def osgeo4w_py3_batchfile_create(OSGeobat, OSGeo4W_root):
     new_batch_filepath = os.path.join(OSGeo4W_root, new_batch_filename)
 
     o4w_line = r'call "%~dp0\bin\o4w_env.bat"'
+    qt5_line = r'call "%~dp0\bin\qt5_env.bat"'
     py3_line = r'call "%~dp0\bin\py3_env.bat"'
 
     with open(new_batch_filepath, 'w+') as osgeo4w_py3_batch_file:
         for line in open(OSGeobat, 'r'):
             osgeo4w_py3_batch_file.write(line)
             if line.rstrip() == o4w_line:
-                osgeo4w_py3_batch_file.write(py3_line+'\n')
+                osgeo4w_py3_batch_file.write(qt5_line + '\n')
+                osgeo4w_py3_batch_file.write(py3_line + '\n')
 
     return new_batch_filepath
 
