@@ -33,10 +33,16 @@ import urllib.request
 from shutil import copyfile
 
 
-def osgeo4w_setup_run(setup_exe_path, site, osgeo4w_root, local_package_dir, osgeo4w_packages):
+def osgeo4w_setup_run(setup_exe_path, site, osgeo4w_root, local_package_dir, osgeo4w_packages, quiet_mode):
+    arguments = [
+        '--autoaccept',
+        '--advanced'
+    ]
+    if quiet_mode:
+        arguments.append('--quiet-mode,')
     osgeo4w_install_cmd = ' '.join(
         [setup_exe_path,
-         '--quiet-mode --autoaccept --advanced',
+         *arguments,
          '--site', site,
          '--root', '"' + osgeo4w_root + '"',
          '--local-package-dir', '"' + local_package_dir + '"',
@@ -71,7 +77,7 @@ def osgeo4w_py_install(osgeo4w_py3_batchfile, python_pack):
     return res
 
 
-def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_package_dir, osgeo4w_packages, python_packages):
+def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_package_dir, osgeo4w_packages, python_packages, quiet_mode):
     setup_filename = "osgeo4w-setup-x86{}.exe".format('_64' if is64 else '')
     setup_exe_path = os.path.join(osgeo4w_setup_exe_dir, setup_filename)
 
@@ -90,7 +96,7 @@ def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_p
         print('downloading {}...'.format(url))
         urllib.request.urlretrieve(url, setup_exe_path)
 
-    ret = osgeo4w_setup_run(setup_exe_path, base_url, osgeo4w_root, local_package_dir, osgeo4w_packages)
+    ret = osgeo4w_setup_run(setup_exe_path, base_url, osgeo4w_root, local_package_dir, osgeo4w_packages, quiet_mode)
     if ret != 0:
         print('installation failed')
         return ret
@@ -101,11 +107,11 @@ def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_p
         print('{}: copy geos_c.dll failed'.format(osgeo4w_root))
 
 
-def osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix):
+def osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix, quiet_mode):
     base_url = 'http://download.osgeo.org/osgeo4w/'
     osgeo4w_packages = ['python3-gdal', 'python3-pip', 'python3-setuptools', 'gdal-ecw', 'gdal-mrsid', 'python3-pandas',
                         'python3-matplotlib', 'pyqt5']
-    python_packages = ['angles', 'geographiclib', 'shapely']
+    python_packages = ['angles', 'geographiclib', 'shapely', 'fidget']
     # python_packages2 = ['pandas', 'geopandas']
 
     for is64 in is64_arcs:
@@ -113,7 +119,8 @@ def osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix):
         osgeo4w_root = osgeo4w_root_base + arch_suffix + dir_suffix
         local_package_dir = osgeo4w_root + '-Setup'
         osgeo4w_setup_exe_dir = local_package_dir
-        osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_package_dir, osgeo4w_packages, python_packages)
+        osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_package_dir, osgeo4w_packages,
+                        python_packages, quiet_mode)
 
 
 def copy_geos_c_dll(path):
@@ -130,7 +137,8 @@ def copy_geos_c_dll(path):
 
 
 if __name__ == '__main__':
+    quiet_mode = False
     osgeo4w_root_base = r"D:\OSGeo4W"
     dir_suffix = ''
     is64_arcs = [True, False]
-    osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix)
+    osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix, quiet_mode)
