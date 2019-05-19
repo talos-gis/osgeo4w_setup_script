@@ -110,8 +110,8 @@ def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_p
 def osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix, quiet_mode):
     base_url = 'http://download.osgeo.org/osgeo4w/'
     osgeo4w_packages = ['python3-gdal', 'python3-pip', 'python3-setuptools', 'gdal-ecw', 'gdal-mrsid', 'python3-pandas',
-                        'python3-matplotlib', 'pyqt5']
-    python_packages = ['angles', 'geographiclib', 'shapely', 'fidget']
+                        'python3-matplotlib', 'pyqt5', 'sip-qt5']
+    python_packages = ['angles', 'geographiclib', 'shapely', 'fidget', 'gdalos']
     # python_packages2 = ['pandas', 'geopandas']
 
     for is64 in is64_arcs:
@@ -137,7 +137,7 @@ def copy_geos_c_dll(path):
 
 
 if __name__ == '__main__':
-    quiet_mode = False
+    quiet_mode = True
     osgeo4w_root_base = r"D:\OSGeo4W"
     dir_suffix = ''
     is64_arcs = [True, False]
