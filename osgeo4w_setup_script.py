@@ -28,6 +28,8 @@ __status__ = "Production"
 
 
 import os
+import inspect
+import filecmp
 import subprocess
 import urllib.request
 from shutil import copyfile
@@ -77,7 +79,8 @@ def osgeo4w_py_install(osgeo4w_py3_batchfile, python_pack):
     return res
 
 
-def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_package_dir, osgeo4w_packages, python_packages, quiet_mode):
+def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_package_dir, osgeo4w_packages,
+                    python_packages, gdalos_path, quiet_mode):
     setup_filename = "osgeo4w-setup-x86{}.exe".format('_64' if is64 else '')
     setup_exe_path = os.path.join(osgeo4w_setup_exe_dir, setup_filename)
 
@@ -87,7 +90,6 @@ def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_p
     print('OSGeo4W Local package dir: ' + local_package_dir)
     print('OSGeo4W Package list: ' + str(osgeo4w_packages))
     print('Python3 Package list: ' + str(python_packages))
-    print('-' * 50)
 
     if not os.path.isfile(setup_exe_path):
         if not os.path.isdir(osgeo4w_setup_exe_dir):
@@ -103,11 +105,14 @@ def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_p
     osgeo4w_batch_filename = os.path.join(osgeo4w_root, 'OSGeo4W.bat')
     osgeo4w_batch_filename = osgeo4w_py3_batchfile_create(osgeo4w_batch_filename, osgeo4w_root)
     osgeo4w_py_install(osgeo4w_batch_filename, python_packages)
-    if not copy_geos_c_dll(osgeo4w_root):
-        print('{}: copy geos_c.dll failed'.format(osgeo4w_root))
+
+    fail_success = ('failed', 'succeeded')
+    print('{}: copy geos_c.dll {}!'.format(osgeo4w_root, fail_success[copy_geos_c_dll(osgeo4w_root)]))
+    print('{}: patching gdal.py {}!'.format(osgeo4w_root, fail_success[replace_gdal_py(osgeo4w_root, gdalos_path)]))
+    print('-' * 50)
 
 
-def osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix, quiet_mode):
+def osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix, gdalos_path, quiet_mode):
     base_url = 'http://download.osgeo.org/osgeo4w/'
     osgeo4w_packages = ['python3-gdal', 'python3-pip', 'python3-setuptools', 'gdal-ecw', 'gdal-mrsid', 'python3-pandas',
                         'python3-matplotlib', 'pyqt5', 'sip-qt5']
@@ -120,7 +125,7 @@ def osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix, quiet_mode):
         local_package_dir = osgeo4w_root + '-Setup'
         osgeo4w_setup_exe_dir = local_package_dir
         osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_package_dir, osgeo4w_packages,
-                        python_packages, quiet_mode)
+                        python_packages, gdalos_path, quiet_mode)
 
 
 def copy_geos_c_dll(path):
@@ -133,12 +138,35 @@ def copy_geos_c_dll(path):
     dst_dir = os.path.split(dst)[0]
     os.makedirs(dst_dir, exist_ok=True)
     copyfile(src, dst)
-    return True
+    return os.path.isfile(dst)
+
+
+def replace_gdal_py(path, gdalos_path):
+    src = os.path.join(gdalos_path, r'gdal_patches\gdal.py')
+    dst = os.path.join(path, r'apps\Python37\lib\site-packages\osgeo\gdal.py')
+    dst_bak = dst+'.bak'
+    src_bak = src+'.bak'
+    if filecmp.cmp(src, dst):
+        return True
+    if not filecmp.cmp(src_bak, dst):
+        return False
+    return file_replace(src, dst, dst_bak)
+
+
+def file_replace(src, dst, bak=True):
+    if not os.path.isfile(src) or not os.path.isfile(dst) or (bak and os.path.isfile(bak)):
+        return False
+    if bak:
+        os.rename(dst, bak)
+    copyfile(src, dst)
+    return os.path.isfile(dst) and filecmp.cmp(src, dst)
 
 
 if __name__ == '__main__':
     quiet_mode = True
     osgeo4w_root_base = r"D:\OSGeo4W"
+    gdalos_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) # script directory
+    gdalos_path = os.path.join(gdalos_path, r'..\gdalos')
     dir_suffix = ''
     is64_arcs = [True, False]
-    osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix, quiet_mode)
+    osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix, gdalos_path, quiet_mode)
