@@ -21,7 +21,7 @@ __author__ = "Idan Miara, Yael Abitbol"
 __copyright__ = "Copyright 2018, The Authors"
 __credits__ = ["Idan Miara", "Yael Abitbol"]
 __license__ = "GPL"
-__version__ = "1.0"
+__version__ = "1.1"
 __maintainer__ = "Idan Miara"
 __email__ = "idan@miara.com"
 __status__ = "Production"
@@ -32,6 +32,7 @@ import inspect
 import filecmp
 import subprocess
 import urllib.request
+import datetime
 from shutil import copyfile
 
 
@@ -112,17 +113,18 @@ def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_p
     print('-' * 50)
 
 
-def osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix, gdalos_path, quiet_mode):
+def osgeo4w_installs(is64_arcs, osgeo4w_root_base, gdalos_path, quiet_mode, root_suffix='', setup_suffix='-Setup'):
     base_url = 'http://download.osgeo.org/osgeo4w/'
     osgeo4w_packages = ['python3-gdal', 'python3-pip', 'python3-setuptools', 'gdal-ecw', 'gdal-mrsid', 'python3-pandas',
                         'python3-matplotlib', 'pyqt5', 'sip-qt5']
-    python_packages = ['angles', 'geographiclib', 'shapely', 'fidget', 'gdalos']
+    python_packages = ['angles', 'geographiclib', 'shapely', 'pyproj', 'fidget', 'gdalos']
     # python_packages2 = ['pandas', 'geopandas']
 
     for is64 in is64_arcs:
         arch_suffix = '64' if is64 else '32'
-        osgeo4w_root = osgeo4w_root_base + arch_suffix + dir_suffix
-        local_package_dir = osgeo4w_root + '-Setup'
+        osgeo4w_root_prefix = osgeo4w_root_base + arch_suffix
+        osgeo4w_root = osgeo4w_root_prefix + root_suffix
+        local_package_dir = osgeo4w_root_prefix + setup_suffix
         osgeo4w_setup_exe_dir = local_package_dir
         osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_package_dir, osgeo4w_packages,
                         python_packages, gdalos_path, quiet_mode)
@@ -167,6 +169,7 @@ if __name__ == '__main__':
     osgeo4w_root_base = r"D:\OSGeo4W"
     gdalos_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) # script directory
     gdalos_path = os.path.join(gdalos_path, r'..\gdalos')
-    dir_suffix = ''
+    root_suffix = '-' + datetime.date.today().strftime("%Y%m%d")
     is64_arcs = [True, False]
-    osgeo4w_installs(is64_arcs, osgeo4w_root_base, dir_suffix, gdalos_path, quiet_mode)
+    osgeo4w_installs(is64_arcs=is64_arcs, osgeo4w_root_base=osgeo4w_root_base, gdalos_path=gdalos_path,
+                     quiet_mode=quiet_mode, root_suffix=root_suffix)
