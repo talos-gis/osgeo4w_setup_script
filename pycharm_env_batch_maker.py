@@ -32,7 +32,7 @@ def pycharm_env_batch_maker(filename):
                             path = pf / (jb + comm + v) / bin_
                             f.write('{}"{}"\n'.format(prefix, path))
                 f.write('\n')
-            f.write('echo %PYCHARM%\n')
+            f.write(':: echo %PYCHARM%\n')
             f.write('if not exist %PYCHARM% exit /b 3')
         return True
     except:

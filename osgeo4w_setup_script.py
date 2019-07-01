@@ -32,9 +32,14 @@ import inspect
 import os
 import subprocess
 import urllib.request
+from typing import Sequence
 from shutil import copyfile
 
 from pycharm_env_batch_maker import pycharm_env_batch_maker
+
+
+def is_list_like(lst):
+    return isinstance(lst, Sequence) and not isinstance(lst, str)
 
 
 def osgeo4w_setup_run(setup_exe_path, site, osgeo4w_root, local_package_dir, osgeo4w_packages, offline_mode, quiet_mode):
@@ -128,16 +133,38 @@ def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_p
     print('-' * 50)
 
 
-def osgeo4w_installs(is64_arcs, osgeo4w_root_base, gdalos_path, quiet_mode, batch_evn, root_suffix='', setup_suffix='-Setup',
-                     offline_mode=False):
-    base_url = 'http://download.osgeo.org/osgeo4w/'
-    osgeo4w_packages = ['python3-gdal', 'python3-pip', 'python3-setuptools', 'gdal-ecw', 'gdal-mrsid', 'python3-pandas',
-                        'python3-matplotlib', 'gdal201dll']
+def osgeo4w_installs(osgeo4w_root_base, is64_arcs=True,
+                     python_packages=..., osgeo4w_packages=...,
+                     base_url=..., gdalos_path=..., batch_evn=..., root_suffix=..., setup_suffix='-Setup',
+                     offline_mode=False, quiet_mode=True):
+    if base_url is ...:
+        base_url = 'http://download.osgeo.org/osgeo4w/'
+
+    if osgeo4w_packages is ...:
+        osgeo4w_packages = ['python3-gdal', 'python3-pip', 'python3-setuptools', 'gdal-ecw', 'gdal-mrsid', 'python3-pandas',
+                            'python3-matplotlib', 'gdal201dll']
+    if batch_evn is ...:
+        batch_evn = dict()
+        batch_evn['py3'] = True
+        batch_evn['qt5'] = True
+        batch_evn['pycharm'] = True
+
     if batch_evn['qt5']:
         osgeo4w_packages.extend(['pyqt5', 'sip-qt5'])
 
-    python_packages = ['angles', 'geographiclib', 'shapely', 'pyproj', 'fidget', 'gdalos']
-    # python_packages2 = ['pandas', 'geopandas']
+    if python_packages is ...:
+        python_packages = ['angles', 'geographiclib', 'shapely', 'pyproj', 'fidget', 'gdalos']
+        # python_packages = ['pandas', 'geopandas']
+
+    if gdalos_path is ...:
+        gdalos_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script directory
+        gdalos_path = os.path.join(gdalos_path, r'..\gdalos')
+
+    if root_suffix is ...:
+        root_suffix = '-' + datetime.date.today().strftime("%Y%m%d")
+
+    if not is_list_like(is64_arcs):
+        is64_arcs = [is64_arcs]
 
     for is64 in is64_arcs:
         arch_suffix = '64' if is64 else '32'
@@ -188,16 +215,5 @@ def file_replace(src, dst, bak=True):
 
 
 if __name__ == '__main__':
-    offline_mode = False
-    quiet_mode = True
-    osgeo4w_root_base = r"D:\OSGeo4W"
-    gdalos_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script directory
-    gdalos_path = os.path.join(gdalos_path, r'..\gdalos')
-    root_suffix = '-' + datetime.date.today().strftime("%Y%m%d")
-    is64_arcs = [True, False]
-    batch_evn = dict()
-    batch_evn['py3'] = True
-    batch_evn['qt5'] = True
-    batch_evn['pycharm'] = True
-    osgeo4w_installs(is64_arcs=is64_arcs, osgeo4w_root_base=osgeo4w_root_base, gdalos_path=gdalos_path,
-                     offline_mode=offline_mode, quiet_mode=quiet_mode, root_suffix=root_suffix, batch_evn=batch_evn)
+    osgeo4w_installs(osgeo4w_root_base=r"D:\OSGeo4W", is64_arcs=[True, False],
+                     offline_mode=False, quiet_mode=True)
