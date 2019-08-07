@@ -189,6 +189,8 @@ def replace_gdal_py(path, gdalos_path):
     dst = os.path.join(path, r'apps\Python37\lib\site-packages\osgeo\gdal.py')
     dst_bak = dst + '.bak'
     src_bak = src + '.bak'
+    if not os.path.isfile(src):
+        return False
     if filecmp.cmp(src, dst):
         return True
     if not filecmp.cmp(src_bak, dst):
