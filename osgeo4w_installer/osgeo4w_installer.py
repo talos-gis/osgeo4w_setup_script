@@ -1,4 +1,4 @@
-""" osgeo4w setup automation script.
+""" osgeo4w downloader and setup automation script.
 
 This script does the following:
     0. downloads the osgeo4w setup file.
@@ -17,15 +17,6 @@ This script does the following:
  ***************************************************************************/
 """
 
-__author__ = "Idan Miara, Yael Abitbol"
-__copyright__ = "Copyright 2018, The Authors"
-__credits__ = ["Idan Miara", "Yael Abitbol"]
-__license__ = "GPL"
-__version__ = "1.2"
-__maintainer__ = "Idan Miara"
-__email__ = "idan@miara.com"
-__status__ = "Production"
-
 import datetime
 import filecmp
 import inspect
@@ -35,7 +26,7 @@ import urllib.request
 from typing import Sequence
 from shutil import copyfile
 
-from pycharm_env_batch_maker import pycharm_env_batch_maker
+from osgeo4w_installer.pycharm_env_batch_maker import pycharm_env_batch_maker
 
 
 def is_list_like(lst):
@@ -133,7 +124,7 @@ def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_p
     print('-' * 50)
 
 
-def osgeo4w_installs(osgeo4w_root_base, is64_arcs=True,
+def osgeo4w_installer(osgeo4w_root_base, is64_arcs=True,
                      python_packages=..., osgeo4w_packages=...,
                      base_url=..., gdalos_path=..., batch_evn=..., root_suffix=..., setup_suffix='-Setup',
                      offline_mode=False, quiet_mode=True):
@@ -153,7 +144,7 @@ def osgeo4w_installs(osgeo4w_root_base, is64_arcs=True,
         osgeo4w_packages.extend(['pyqt5', 'sip-qt5'])
 
     if python_packages is ...:
-        python_packages = ['angles', 'geographiclib', 'shapely', 'pyproj', 'fidget', 'gdalos']
+        python_packages = ['angles', 'geographiclib', 'shapely', 'pyproj', 'fidget', 'gdalos', 'transmogripy']
         # python_packages = ['pandas', 'geopandas']
 
     if gdalos_path is ...:
@@ -215,5 +206,5 @@ def file_replace(src, dst, bak=True):
 
 
 if __name__ == '__main__':
-    osgeo4w_installs(osgeo4w_root_base=r"D:\OSGeo4W", is64_arcs=[True, False],
-                     offline_mode=False, quiet_mode=True)
+    osgeo4w_installer(osgeo4w_root_base=r"D:\OSGeo4W", is64_arcs=[True, False],
+                     offline_mode=True, quiet_mode=True)
