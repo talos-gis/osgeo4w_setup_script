@@ -124,7 +124,7 @@ def osgeo4w_install(is64, base_url, osgeo4w_setup_exe_dir, osgeo4w_root, local_p
     print('-' * 50)
 
 
-def osgeo4w_installer(osgeo4w_root_base, is64_arcs=True,
+def osgeo4w_installer(osgeo4w_root_base, is64_arcs=[True, False],
                      python_packages=..., osgeo4w_packages=...,
                      base_url=..., gdalos_path=..., batch_evn=..., root_suffix=..., setup_suffix='-Setup',
                      offline_mode=False, quiet_mode=True):
@@ -144,7 +144,7 @@ def osgeo4w_installer(osgeo4w_root_base, is64_arcs=True,
         osgeo4w_packages.extend(['pyqt5', 'sip-qt5'])
 
     if python_packages is ...:
-        python_packages = ['angles', 'geographiclib', 'shapely', 'pyproj', 'fidget', 'gdalos', 'transmogripy']
+        python_packages = ['angles', 'geographiclib', 'shapely', 'pyproj', 'fidget', 'gdalos', 'transmogripy', 'osgeo4w_installer']
         # python_packages = ['pandas', 'geopandas']
 
     if gdalos_path is ...:
@@ -205,6 +205,9 @@ def file_replace(src, dst, bak=True):
     return os.path.isfile(dst) and filecmp.cmp(src, dst)
 
 
+def main():
+    osgeo4w_installer(osgeo4w_root_base=r"D:\OSGeo4W", is64_arcs=[True, False], offline_mode=False)
+
+
 if __name__ == '__main__':
-    osgeo4w_installer(osgeo4w_root_base=r"D:\OSGeo4W", is64_arcs=[True, False],
-                     offline_mode=True, quiet_mode=True)
+    main()
