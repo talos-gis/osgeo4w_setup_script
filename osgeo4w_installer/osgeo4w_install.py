@@ -53,14 +53,13 @@ def osgeo4w_setup_run(setup_exe_path, site, osgeo4w_root, local_package_dir, osg
     return subprocess.call(osgeo4w_install_cmd, shell=True)
 
 
-def osgeo4w_batchfile_extender(osgeo4w_batch, osgeo4w_root, batch_evn=None):
-    new_batch_filename = r"OSGeo4W3.bat"
+def osgeo4w_batchfile_extender(osgeo4w_batch, osgeo4w_root, batch_evn, batch_suffix):
+    new_batch_filename = "OSGeo4W{}.bat".format(batch_suffix)
     new_batch_filepath = os.path.join(osgeo4w_root, new_batch_filename)
 
     extra_batches = ['o4w_env']
-    for k, v in batch_evn.items():
-        if v:
-            extra_batches.append(k+'_env')
+    for k in batch_evn:
+        extra_batches.append(k)
 
     extra_batches_cmd = [r'call "%~dp0\bin\{}.bat"'.format(b) for b in extra_batches]
     o4w_line = extra_batches_cmd[0]
@@ -107,21 +106,23 @@ def osgeo4w_install(osgeo4w_setup_exe_dir, osgeo4w_root, local_package_dir,
                     is64=True,
                     base_url=..., gdalos_path=..., batch_evn=...,
                     osgeo4w_packages=..., python_packages=...,
-                    offline_mode=False, quiet_mode=True):
+                    offline_mode=False, quiet_mode=True, dev=False):
     if base_url is ...:
         base_url = 'http://download.osgeo.org/osgeo4w/'
 
     if osgeo4w_packages is ...:
         osgeo4w_packages = ['python3-gdal', 'python3-pip', 'python3-setuptools',
                             'gdal-ecw', 'gdal-mrsid', 'gdal-csharp',
-                            'python3-pandas', 'python3-matplotlib', 'gdal201dll']
+                            'python3-pandas', 'python3-matplotlib', 'gdal201dll', 'gdal204dll']
+        if dev:
+            osgeo4w_packages.append('python3-gdal-dev')
     if batch_evn is ...:
-        batch_evn = dict()
-        batch_evn['py3'] = True
-        batch_evn['qt5'] = True
-        batch_evn['pycharm'] = True
+        batch_evn = list()
+        batch_evn.append('py3_env')
+        batch_evn.append('qt5_env')
+        batch_evn.append('pycharm_env')
 
-    if batch_evn['qt5']:
+    if 'qt5_env' in batch_evn:
         osgeo4w_packages.extend(['pyqt5', 'sip-qt5'])
 
     if python_packages is ...:
@@ -156,14 +157,23 @@ def osgeo4w_install(osgeo4w_setup_exe_dir, osgeo4w_root, local_package_dir,
         print('installation failed')
         return ret
     osgeo4w_batch_filename = os.path.join(osgeo4w_root, 'OSGeo4W.bat')
-    osgeo4w_batch_filename = osgeo4w_batchfile_extender(osgeo4w_batch=osgeo4w_batch_filename,
+    osgeo4w3_batch_filename = osgeo4w_batchfile_extender(osgeo4w_batch=osgeo4w_batch_filename,
                                                         osgeo4w_root=osgeo4w_root,
-                                                        batch_evn=batch_evn)
+                                                        batch_evn=batch_evn,
+                                                        batch_suffix='3')
+    if dev:
+        batch_evn.append('gdal-dev-py3-env')
+        batch_evn.append('proj-dev-env')
+        osgeo4w3_dev_batch_filename = osgeo4w_batchfile_extender(osgeo4w_batch=osgeo4w_batch_filename,
+                                                            osgeo4w_root=osgeo4w_root,
+                                                            batch_evn=batch_evn,
+                                                            batch_suffix='3-dev')
+
     fail_success = ('failed', 'succeeded')
     pycharm_batch = os.path.join(osgeo4w_root, 'bin', 'pycharm_env.bat')
     print('{}: creating pycharm_env.bat {}!'.format(osgeo4w_root, fail_success[pycharm_env_batch_maker(pycharm_batch)]))
 
-    osgeo4w_py_install(osgeo4w_batch_filename, python_packages)
+    osgeo4w_py_install(osgeo4w3_batch_filename, python_packages)
 
     print('{}: copy geos_c.dll {}!'.format(osgeo4w_root, fail_success[copy_geos_c_dll(osgeo4w_root)]))
     print('{}: patching gdal.py {}!'.format(osgeo4w_root, fail_success[replace_gdal_py(osgeo4w_root, gdalos_path)]))
@@ -189,12 +199,15 @@ def replace_gdal_py(path, gdalos_path):
     dst_bak = dst + '.bak'
     src_bak = src + '.bak'
     if not os.path.isfile(src):
-        print('cannot replace gdal.py, file not found: {}'.format(src))
+        print('cannot replace src gdal.py, file not found: {}'.format(src))
+        return False
+    if not os.path.isfile(dst):
+        print('cannot replace dst gdal.py, file not found: {}'.format(dst))
         return False
     if filecmp.cmp(src, dst):
         return True
     if not filecmp.cmp(src_bak, dst):
-        print('cannot replace gdal.py, its contants are different then expected: {} -> {}'.format(src, dst))
+        print('cannot replace gdal.py, its contents are different then expected: {} -> {}'.format(src, dst))
         return False
     return file_replace(src, dst, dst_bak)
 
@@ -213,7 +226,7 @@ def file_replace(src, dst, bak=None):
 
 
 def main():
-    osgeo4w_install_base(osgeo4w_root_base=r"D:\OSGeo4W", is64=[True, False], offline_mode=False, quiet_mode=True)
+    osgeo4w_install_base(osgeo4w_root_base=r"D:\OSGeo4W", is64=[True, False], offline_mode=False, quiet_mode=False, dev=True)
 
 
 if __name__ == '__main__':
