@@ -13,6 +13,7 @@ def pycharm_env_batch_maker(filename):
     prefix = 'if not exist %PYCHARM% SET PYCHARM='
     pf64 = Path(r'C:\Program Files')
     pf32 = Path(r'C:\Program Files (x86)')
+    user = Path(r'%LOCALAPPDATA%')
     jb = r'JetBrains\PyCharm '
     community = r'Community Edition '
     bin64 = r'bin\pycharm64.exe'
@@ -26,7 +27,7 @@ def pycharm_env_batch_maker(filename):
                 if v.endswith('.0'):
                     v = v[:-2]
                 f.write(':: version {}\n'.format(v))
-                for pf in (pf64, pf32):
+                for pf in (pf64, pf32, user):
                     for comm in (community, ''):
                         for bin_ in (bin64, bin32):
                             path = pf / (jb + comm + v) / bin_
@@ -40,4 +41,4 @@ def pycharm_env_batch_maker(filename):
 
 
 if __name__ == '__main__':
-    pycharm_env_batch_maker(r'..\bat\pycharm_env.bat')
+    pycharm_env_batch_maker(r'pycharm_env.bat')
